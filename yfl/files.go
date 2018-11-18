@@ -2,8 +2,11 @@
 package yfl
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -11,11 +14,26 @@ import (
 )
 
 type Post struct {
-	Nome     string
-	Conteudo string
+	Nome     string `json:"nome"`
+	NovoNome string `json:"novoNome"`
+	Conteudo string `json:"conteudo"`
 }
 
-func ListaPosts(path string) []Post {
+type configResult struct {
+	Repo string `json:"repo"`
+}
+
+const (
+	path = "content" + string(filepath.Separator) + "post"
+)
+
+func IniciaArquivoConfig() {
+	f, err := os.Create("yugo.json")
+	defer f.Close()
+	yutils.Check(err)
+}
+
+func ListaPosts() []Post {
 	var posts []Post
 	files, err := ioutil.ReadDir(path)
 	yutils.Check(err)
@@ -24,13 +42,12 @@ func ListaPosts(path string) []Post {
 		tmp := Post{Nome: f.Name()}
 		posts = append(posts, tmp)
 	}
-
 	return posts
 }
 
-func LePost(path string, nomePost string) (Post, error) {
+func LePost(nomePost string) (Post, error) {
 	post := Post{Nome: nomePost}
-	posts := ListaPosts(path)
+	posts := ListaPosts()
 	for _, p := range posts {
 		if post.Nome == strings.Replace(p.Nome, ".md", "", -1) {
 			f, err := ioutil.ReadFile(path + string(filepath.Separator) + p.Nome) // just pass the file name
@@ -40,4 +57,57 @@ func LePost(path string, nomePost string) (Post, error) {
 		}
 	}
 	return post, errors.New("erro")
+}
+
+func AtualizaConfig(body io.Reader) {
+	var cr configResult
+	err := json.NewDecoder(body).Decode(&cr)
+	yutils.Check(err)
+
+	crJSON, err := json.MarshalIndent(cr, "", "	")
+	yutils.Check(err)
+
+	file, err := os.Create("yugo.json")
+	yutils.Check(err)
+	defer file.Close()
+	file.WriteString(string(crJSON))
+}
+
+func NewPost() {
+	file, err := os.Create("content" + string(filepath.Separator) + "post" + string(filepath.Separator) + "_newpost.md")
+	yutils.Check(err)
+	defer file.Close()
+	file.WriteString("renomeie esse arquivo!")
+}
+
+func SavePost(body io.Reader) {
+	var post Post
+	err := json.NewDecoder(body).Decode(&post)
+	yutils.Check(err)
+
+	file, err := os.Create("content" + string(filepath.Separator) + "post" + string(filepath.Separator) + post.Nome + ".md")
+	yutils.Check(err)
+	defer file.Close()
+	file.WriteString(post.Conteudo)
+}
+
+func RenamePost(body io.Reader) {
+	var post Post
+	err := json.NewDecoder(body).Decode(&post)
+	yutils.Check(err)
+
+	os.Rename("content"+string(filepath.Separator)+"post"+string(filepath.Separator)+post.Nome+".md", "content"+string(filepath.Separator)+"post"+string(filepath.Separator)+post.NovoNome+".md")
+}
+
+func DeletePost(body io.Reader) {
+	var post Post
+	err := json.NewDecoder(body).Decode(&post)
+	yutils.Check(err)
+
+	err = os.Remove("content" + string(filepath.Separator) + "post" + string(filepath.Separator) + post.Nome + ".md")
+	yutils.Check(err)
+}
+
+func get() {
+
 }

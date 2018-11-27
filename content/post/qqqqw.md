@@ -1,3 +1,0 @@
-gfaa
-qqqqqqq
-ww

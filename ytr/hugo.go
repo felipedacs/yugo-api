@@ -1,17 +1,14 @@
-// yugo terminal
 package ytr
 
 import (
-	"fmt"
-	"log"
 	"os/exec"
+
+	"github.com/felipedacs/yugo-api/yutils"
 )
 
+// IniciaHugo inicializa server do Hugo
 func IniciaHugo() {
 	cmd := exec.Command("hugo", "server", "-D")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	_, err := cmd.CombinedOutput()
+	yutils.Check(err)
 }

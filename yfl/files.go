@@ -13,6 +13,7 @@ import (
 	"github.com/felipedacs/yugo-api/yutils"
 )
 
+// Post estrutura do padrão de arquivo post
 type Post struct {
 	Nome     string `json:"nome"`
 	NovoNome string `json:"novoNome"`
@@ -27,12 +28,17 @@ const (
 	path = "content" + string(filepath.Separator) + "post"
 )
 
+// IniciaArquivoConfig cria ou não yugo.json
 func IniciaArquivoConfig() {
-	f, err := os.Create("yugo.json")
-	defer f.Close()
-	yutils.Check(err)
+	filename := "yugo.json"
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		f, err := os.Create("yugo.json")
+		defer f.Close()
+		yutils.Check(err)
+	}
 }
 
+// ListaPosts listagem dos titulos dos arquivos de post sem ".md"
 func ListaPosts() []Post {
 	var posts []Post
 	files, err := ioutil.ReadDir(path)
@@ -45,6 +51,7 @@ func ListaPosts() []Post {
 	return posts
 }
 
+// LePost leitura do arquivo para retornar a struct post
 func LePost(nomePost string) (Post, error) {
 	post := Post{Nome: nomePost}
 	posts := ListaPosts()
@@ -59,6 +66,7 @@ func LePost(nomePost string) (Post, error) {
 	return post, errors.New("erro")
 }
 
+// AtualizaConfig recria yugo.json
 func AtualizaConfig(body io.Reader) {
 	var cr configResult
 	err := json.NewDecoder(body).Decode(&cr)
@@ -73,6 +81,7 @@ func AtualizaConfig(body io.Reader) {
 	file.WriteString(string(crJSON))
 }
 
+// NewPost cria novo arquivo ".md" com título e conteúdo padrão
 func NewPost() {
 	file, err := os.Create("content" + string(filepath.Separator) + "post" + string(filepath.Separator) + "_newpost.md")
 	yutils.Check(err)
@@ -80,6 +89,7 @@ func NewPost() {
 	file.WriteString("renomeie esse arquivo!")
 }
 
+// SavePost cria novo arquivo de mesmo nome com conteúdo diferente, sobescrevendo o antigo
 func SavePost(body io.Reader) {
 	var post Post
 	err := json.NewDecoder(body).Decode(&post)
@@ -91,6 +101,7 @@ func SavePost(body io.Reader) {
 	file.WriteString(post.Conteudo)
 }
 
+// RenamePost renomeia novo post a partir do nome atual para o novo
 func RenamePost(body io.Reader) {
 	var post Post
 	err := json.NewDecoder(body).Decode(&post)
@@ -99,6 +110,7 @@ func RenamePost(body io.Reader) {
 	os.Rename("content"+string(filepath.Separator)+"post"+string(filepath.Separator)+post.Nome+".md", "content"+string(filepath.Separator)+"post"+string(filepath.Separator)+post.NovoNome+".md")
 }
 
+// DeletePost remove post
 func DeletePost(body io.Reader) {
 	var post Post
 	err := json.NewDecoder(body).Decode(&post)
@@ -106,8 +118,4 @@ func DeletePost(body io.Reader) {
 
 	err = os.Remove("content" + string(filepath.Separator) + "post" + string(filepath.Separator) + post.Nome + ".md")
 	yutils.Check(err)
-}
-
-func get() {
-
 }

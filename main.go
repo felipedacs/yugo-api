@@ -98,11 +98,9 @@ func config(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var cr configResult
 		err := json.NewDecoder(r.Body).Decode(&cr)
-		if err != nil {
-			fmt.Println("deu erro")
-		}
+		yutils.Check(err)
 
-		// yfl.AtualizaConfig(r.Body)
+		yfl.AtualizaConfig(r.Body)
 		ytr.PublicaESalva(cr.Usuario, cr.Senha, cr.Repo)
 	} else if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")

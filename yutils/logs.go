@@ -1,5 +1,0 @@
-package yutils
-
-func main() {
-
-}

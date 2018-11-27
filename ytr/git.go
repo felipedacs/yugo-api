@@ -1,58 +1,39 @@
 package ytr
 
 import (
-	"fmt"
-	"log"
 	"os/exec"
+
+	"github.com/felipedacs/yugo-api/yutils"
 )
 
+// PublicaESalva hub de dois pushs
 func PublicaESalva(user, senha, repo string) {
-	fmt.Println("chegou aq")
 	cmd := exec.Command("hugo")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	_, err := cmd.CombinedOutput()
+	yutils.Check(err)
 
 	PushTo(".", user, senha, repo, "source")      //codigo fonte do blog
 	PushTo("public", user, senha, repo, "master") //blog.github.io
 }
 
+// PushTo inicia git, adiciona, commita e pusha
 func PushTo(dir, user, senha, url, branch string) {
 	cmd := exec.Command("git", "init")
 	cmd.Dir = dir
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	_, err := cmd.CombinedOutput()
+	yutils.Check(err)
 
 	cmd = exec.Command("git", "add", ".")
-	cmd.Dir = dir
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	_, err = cmd.CombinedOutput()
+	yutils.Check(err)
 
 	cmd = exec.Command("git", "commit", "-m", "foi")
-	cmd.Dir = dir
-	out, err = cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	_, err = cmd.CombinedOutput()
+	yutils.Check(err)
 
 	remote := "https://" + user + ":" + senha + "@" + url
-	fmt.Println(remote)
 	branchremote := "master:" + branch
-	fmt.Println(branchremote)
 	cmd = exec.Command("git", "push", "-f", remote, branchremote)
-	cmd.Dir = dir
 	_, err = cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-	fmt.Printf("combined out:\n%s\n", string(out))
+	yutils.Check(err)
 }
